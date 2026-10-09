@@ -1,122 +1,71 @@
-# Hospital Readmissions by Ownership Type
+# Hospital readmissions by ownership type
 
-CMS penalizes hospitals that readmit more patients than expected. This looks at
-whether for-profit and nonprofit hospitals differ, using FY 2026 data.
+CMS cuts Medicare payments to hospitals that readmit more patients than expected, through the Hospital Readmissions Reduction Program.
+Primary Question: I wanted to see if for-profit hospitals do worse on this than nonprofits, and whether that has to do with ownership or just because for-profit hospitals tend to be smaller.
 
-## What the number means
+## The number this is based on
 
-The excess readmission ratio compares a hospital's actual readmissions to what
-CMS predicts given its patient mix. Above 1.0 is more readmissions than
-expected. Below 1.0 is fewer. It centers on 1.0 by construction.
+Each hospital gets an excess readmission ratio for each condition. It's the hospital's predicted readmission rate divided by what an average hospital would get with the same patients. Above 1.0 means more readmissions than expected, below 1.0 means fewer. It averages out to 1.0, so most hospitals are between about 0.96 and 1.04, and a difference of 0.02 is actually a decent sized gap.
 
-## Result
+## What I found
 
-For-profit hospitals average 1.0151 for heart failure. Nonprofit private
-hospitals average 0.9962.
+For heart failure, 57% of for-profit hospitals were above 1.0, compared to 45% of nonprofits.
 
-| Ownership | Hospitals | Mean ratio | % above expected |
-|---|---:|---:|---:|
-| Proprietary (for-profit) | 476 | 1.0151 | 58.2% |
-| Government - Hospital District | 182 | 1.0086 | 53.8% |
-| Government - Local | 123 | 1.0085 | 58.5% |
-| Voluntary nonprofit - Other | 230 | 1.0013 | 47.8% |
-| Voluntary nonprofit - Private | 1,348 | 0.9962 | 45.5% |
-| Voluntary nonprofit - Church | 195 | 0.9916 | 39.5% |
+| Ownership | Hospitals | Mean ratio | % above 1.0 | Median heart failure discharges |
+|---|---:|---:|---:|---:|
+| For-profit | 489 | 1.014 | 57% | 191 |
+| Government | 354 | 1.009 | 56% | 215 |
+| Nonprofit | 1,773 | 0.996 | 45% | 317 |
 
-95% confidence intervals: for-profit 1.0097 to 1.0205, nonprofit private
-0.9926 to 0.9997. The intervals don't overlap.
+The last column is the problem. For-profit hospitals are a lot smaller, and smaller hospitals have higher ratios in general. So I ran a regression with ownership and hospital size together. The for-profit gap went from 0.021 to 0.018, so size explains some of it (about 15%) but most of the gap is still there. Splitting hospitals into four size groups shows the same thing, for-profits are higher than nonprofits in every group.
 
-Federal, State, Tribal, and Physician-owned categories each have under 40
-hospitals and are left out of the comparison.
+Then, I ran the same size-adjusted regression for all six conditions CMS tracks. For-profits were higher in all six. The gap was statistically significant for heart failure, pneumonia, heart attack and COPD. For bypass surgery and hip/knee replacement it pointed the same way but there weren't enough hospitals (363 and 253) to be sure.
 
-## Checking whether it's really about size
+![For-profit gap by condition](charts/for_profit_gap_by_condition.png)
 
-Smaller hospitals do worse:
+I expected government hospitals to look like for-profits since they were also worse on heart failure. They didn't. For the other five conditions they were basically the same as nonprofits, so the heart failure result for government hospitals might be specific to that condition or just noise.
 
-| Size quartile | Hospitals | Mean ratio | % above expected |
-|---|---:|---:|---:|
-| Smallest | 579 | 1.0144 | 61.3% |
-| Small-mid | 579 | 1.0036 | 51.0% |
-| Mid-large | 579 | 1.0033 | 49.6% |
-| Largest | 574 | 0.9940 | 43.2% |
-
-For-profits are also smaller. Median heart failure discharges: 192 for
-for-profits, 333 for nonprofits. So the ownership difference might just be a
-size difference.
-
-Splitting by size shows it isn't:
-
-| Size quartile | For-profit | Nonprofit | Gap |
-|---|---:|---:|---:|
-| Smallest | 1.0227 (n=149) | 1.0080 (n=231) | +0.0147 |
-| Small-mid | 1.0122 (n=126) | 0.9978 (n=288) | +0.0144 |
-| Mid-large | 1.0260 (n=84) | 0.9994 (n=328) | +0.0266 |
-| Largest | 1.0226 (n=47) | 0.9894 (n=377) | +0.0332 |
-
-For-profit is higher in all four bands, and the gap gets wider at larger sizes,
-not smaller.
-
-![Readmissions by ownership and size](readmissions_by_ownership.png)
-
-Nonprofit ratios drop as hospitals get bigger, from 1.0080 down to 0.9894.
-For-profit ratios don't move much, 1.0227 to 1.0226.
-
-## Across all six conditions
-
-| Condition | For-profit | Nonprofit | Gap |
-|---|---:|---:|---:|
-| Coronary artery bypass | 1.0350 | 0.9943 | +0.041 |
-| Hip/knee replacement | 1.0299 | 1.0034 | +0.027 |
-| Heart attack | 1.0174 | 0.9978 | +0.020 |
-| Heart failure | 1.0151 | 0.9962 | +0.019 |
-| Pneumonia | 1.0165 | 0.9994 | +0.017 |
-| COPD | 1.0054 | 1.0015 | +0.004 |
-
-Higher for for-profits on all six. COPD is close to even.
-
-## What this doesn't show
-
-The confidence intervals don't overlap, so the difference is unlikely to be due
-to random variation. That rules out chance, not confounding. Size is the only
-variable held constant.
-
-Unmeasured factors could explain the difference, like the health of the
-surrounding population or whether patients can get follow-up care after
-discharge.
-
-The largest-quartile for-profit cell has 47 hospitals. It's the smallest group
-in the table and carries the biggest gap, so it's the least reliable comparison.
-
-Missing data isn't even across conditions. CMS suppresses ratios when volume is
-too low, which affects 71% of hospitals for coronary bypass and 11% for
-pneumonia. The six conditions aren't drawing on the same set of hospitals.
-
-This is one year of data.
+Ownership and size together only explain about 3% of the variation between hospitals (R-squared of 0.027). So the for-profit gap is real and shows up across conditions, but most of what makes one hospital's readmissions higher than another's is something this data doesn't capture.
 
 ## Data
 
 From [CMS Provider Data](https://data.cms.gov/provider-data/topics/hospitals):
 
-- FY 2026 Hospital Readmissions Reduction Program, 18,330 rows (one per
-  hospital per condition)
-- Hospital General Information, 5,432 hospitals
+- FY 2026 Hospital Readmissions Reduction Program. One row per hospital per condition, 3,055 hospitals.
+- Hospital General Information, for ownership type.
 
-Joined on Facility ID. The readmissions file drops leading zeros from the ID, so
-both were padded to six characters before merging. Five hospitals had no match
-and were dropped.
+## How I did it
+
+I grouped CMS's 12 ownership categories into three: for-profit (proprietary and physician owned), nonprofit (private, church and other nonprofits) and government (local, state, federal, hospital district, VA, military and tribal). Some of the original categories only have a few dozen hospitals, which is too small to compare on their own.
+
+For size I used each hospital's number of discharges for that condition. CMS doesn't report discharges for some hospitals (305 for heart failure), so those were left out of the size-adjusted part. I used the log of discharges in the regression since hospital sizes range from 31 to over 3,000 and going from 50 to 100 patients matters a lot more than going from 3,000 to 3,050.
+
+## Things to keep in mind
+
+This shows for-profit hospitals have higher ratios, not why. Things like the health of the local population, how easy it is for patients to get follow-up care, and staffing aren't in this data and could explain some of the gap.
+
+The ratio is already risk adjusted by CMS, but is not perfect.
+
+The six conditions don't all use the same hospitals, since CMS doesn't report a ratio when a hospital has too few cases. Bypass surgery is missing for most hospitals.
+
+This is one year of data.
 
 ## Running it
 
 ```bash
-python3.12 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
-pip install pandas matplotlib numpy
-
-python3 explore.py
-python3 analyze.py
-python3 chart.py
+pip install -r requirements.txt
 ```
 
-## Stack
+Download the two files above into `data/raw/`, make a `data/clean/` folder, and run the scripts in order:
 
-Python, pandas, matplotlib
+```bash
+python scripts/01_explore.py
+python scripts/02_ownership.py
+python scripts/03_size_check.py
+python scripts/04_all_conditions.py
+python scripts/05_chart.py
+```
+
+Built with Python, pandas, statsmodels and matplotlib.
